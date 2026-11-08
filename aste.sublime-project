@@ -1,0 +1,28 @@
+{
+    "folders":
+    [
+        {
+            "path": "src",
+        },
+    ],
+    "settings":
+    {
+        "tab_size": 4,
+        "translate_tabs_to_spaces": true,
+    },
+    "build_systems":
+    [
+        {
+            "name": "Build",
+            "working_dir": "$project_path",
+            "shell_cmd": "jai build.jai",
+            "variants":
+            [
+                {
+                    "name": "Run",
+                    "shell_cmd": "jai build.jai - run",
+                },
+            ],
+        }
+    ],
+}
