@@ -8,7 +8,7 @@ Renderer :: struct {
 
 Vertex :: struct {
     using #as position: Vector2;
-    color: [4]float32;
+    color: [4]float;
 }
 
 Triangle :: [3]Vertex;
@@ -180,7 +180,7 @@ void main()
 }
 EOF
 
-DEFAULT_CLEAR_COLOR :: float32.[0x18 / 255.0, 0x18 / 255.0, 0x18 / 255.0];
+DEFAULT_CLEAR_COLOR :: float.[0x18 / 255.0, 0x18 / 255.0, 0x18 / 255.0];
 MAX_TRIANGLES :: 1024;
 
 #import "GL";
