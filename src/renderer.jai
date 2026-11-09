@@ -7,11 +7,16 @@ Renderer :: struct {
 }
 
 Vertex :: struct {
-    #as position: [2]float32;
+    using #as position: Vector2;
     color: [4]float32;
 }
 
 Triangle :: [3]Vertex;
+
+Rectangle :: struct {
+    x, y: float; // Top-left corner.
+    w, h: float;
+}
 
 renderer_init :: (using r: *Renderer, window: Window_Type) {
     gl_create_context(window);
@@ -47,9 +52,38 @@ renderer_init :: (using r: *Renderer, window: Window_Type) {
     set_gl_uniform(program, "u_projection", projection);
 }
 
-push_triangle :: (using r: *Renderer, t: Triangle) {
-    triangles[triangle_count] = t;
-    triangle_count += 1;
+push_triangle :: inline (using r: *Renderer, ts: ..Triangle) {
+    for t: ts {
+        triangles[triangle_count] = t;
+        triangle_count += 1;
+    }
+}
+
+/*
+    0---1
+    | \ |
+    2---3
+*/
+push_quad :: inline (using r: *Renderer, v0: Vertex, v1: Vertex, v2: Vertex, v3: Vertex) {
+    t1: Triangle = .[ v0, v2, v3 ];
+    t2: Triangle = .[ v0, v1, v3 ];
+    push_triangle(r, t1, t2);
+}
+
+push_rectangle :: inline (using r: *Renderer, rect: Rectangle, c0: [4]float, c1: [4]float, c2: [4]float, c3: [4]float) {
+    v0: Vertex = .{ .{ rect.x         , rect.y          }, c0 };
+    v1: Vertex = .{ .{ rect.x + rect.w, rect.y          }, c1 };
+    v2: Vertex = .{ .{ rect.x         , rect.y + rect.h }, c2 };
+    v3: Vertex = .{ .{ rect.x + rect.w, rect.y + rect.h }, c3 };
+    push_quad(r, v0, v1, v2, v3);
+}
+
+push_solid_rectangle :: inline (using r: *Renderer, rect: Rectangle, color: [4]float) {
+    v0: Vertex = .{ .{ rect.x         , rect.y          }, color };
+    v1: Vertex = .{ .{ rect.x + rect.w, rect.y          }, color };
+    v2: Vertex = .{ .{ rect.x         , rect.y + rect.h }, color };
+    v3: Vertex = .{ .{ rect.x + rect.w, rect.y + rect.h }, color };
+    push_quad(r, v0, v1, v2, v3);
 }
 
 renderer_flush :: (using r: *Renderer) {

@@ -25,22 +25,13 @@ main :: () {
             }
         }
 
-        v0, v1, v2: Vertex;
-        v0.position = float32.[ 0, 0 ];
-        v0.color = float32.[ 1.0, 1.0, 0.0, 1.0 ];
+        rect: Rectangle;
+        rect.x = 100;
+        rect.y = 100;
+        rect.w = 200;
+        rect.h = 300;
 
-        v1.position = float32.[ xx renderer.width, xx renderer.height ];
-        v1.color = float32.[ 1.0, 0.0, 1.0, 1.0 ];
-
-        v2.position = float32.[ 0, xx renderer.height ];
-        v2.color = float32.[ 0.0, 1.0, 1.0, 1.0 ];
-
-        t: Triangle;
-        t[0] = v0;
-        t[1] = v1;
-        t[2] = v2;
-
-        push_triangle(*renderer, t);
+        push_rectangle(*renderer, rect, .[ 1.0, 0.0, 0.0, 1.0 ], .[ 0.0, 1.0, 0.0, 1.0 ], .[ 0.0, 0.0, 1.0, 1.0 ], .[ 1.0, 1.0, 1.0, 1.0 ]);
 
         renderer_flush(*renderer);
         swap_buffers(window);
