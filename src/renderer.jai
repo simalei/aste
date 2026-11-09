@@ -42,6 +42,9 @@ renderer_init :: (using r: *Renderer, window: Window_Type) {
 
     glVertexAttribPointer(1, 4, GL_FLOAT, false, size_of(Vertex), cast(*void) offset_of(Vertex, "color"));
     glEnableVertexAttribArray(1);
+
+    projection := orthographic_projection_matrix(0, cast(float, width), cast(float, height), 0, -1, 1);
+    set_gl_uniform(program, "u_projection", projection);
 }
 
 push_triangle :: (using r: *Renderer, t: Triangle) {
@@ -69,9 +72,17 @@ renderer_flush :: (using r: *Renderer) {
 renderer_resize :: (using r: *Renderer, new_width: int, new_height: int) {
     width = new_width;
     height = new_height;
+
+    projection := orthographic_projection_matrix(0, cast(float, width), cast(float, height), 0, -1, 1);
+    set_gl_uniform(program, "u_projection", projection);
 }
 
 #scope_file
+
+set_gl_uniform :: (program: GLuint, $name: string, value: Matrix4, transpose := true) {
+    location := _glGetUniformLocation(program, name);
+    glUniformMatrix4fv(location, 1, transpose, *value._11);
+}
 
 create_program :: () -> program: GLuint {
     vs := glCreateShader(GL_VERTEX_SHADER);
@@ -113,9 +124,11 @@ layout (location = 1) in vec4 a_color;
 
 out vec4 v_color;
 
+uniform mat4 u_projection;
+
 void main()
 {
-    gl_Position = vec4(a_position, 0.0, 1.0);
+    gl_Position = u_projection * vec4(a_position, 0.0, 1.0);
     v_color = a_color;
 }
 EOF
@@ -138,3 +151,4 @@ MAX_TRIANGLES :: 1024;
 
 #import "GL";
 #import "Window_Creation";
+#import "Math";

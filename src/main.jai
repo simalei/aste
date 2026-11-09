@@ -12,6 +12,7 @@ main :: () {
 
     quit := false;
     while !quit {
+        reset_temporary_storage();
         update_window_events();
 
         for events_this_frame {
@@ -25,13 +26,13 @@ main :: () {
         }
 
         v0, v1, v2: Vertex;
-        v0.position = float32.[ -0.5, -0.5 ];
+        v0.position = float32.[ 0, 0 ];
         v0.color = float32.[ 1.0, 1.0, 0.0, 1.0 ];
 
-        v1.position = float32.[ 0.5, -0.5 ];
+        v1.position = float32.[ xx renderer.width, xx renderer.height ];
         v1.color = float32.[ 1.0, 0.0, 1.0, 1.0 ];
 
-        v2.position = float32.[ 0.0, 0.5 ];
+        v2.position = float32.[ 0, xx renderer.height ];
         v2.color = float32.[ 0.0, 1.0, 1.0, 1.0 ];
 
         t: Triangle;
