@@ -9,13 +9,11 @@ offset_of :: ($T: Type, $member: string) -> int {
 }
 
 embed :: ($path: string, $T := string) -> T {
-    #import "File";
     contents := read_entire_file(path);
     return cast(T, contents);
 }
 
 log_codepoint :: (format_string: string, codepoint: u32) {
-    #import "Unicode";
     s := character_utf32_to_utf8(codepoint,, allocator = temp);
     log(format_string, s);
 } @PrintLike

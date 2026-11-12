@@ -15,6 +15,7 @@ main :: () {
 
     swap_interval(1);
     quit := false;
+
     while !quit {
         reset_temporary_storage();
         update_window_events();
@@ -38,7 +39,7 @@ main :: () {
 
         TEXT :: "main :: () -> string { return \"Привет!\"; }";
         push_text(*renderer, .{ 200, 200 }, TEXT);
-        //push_textured_rectangle(*renderer, .{ 0, 0, 512, 512 }, .{ 0, 0, 1, 1 });
+        //push_textured_rectangle(*renderer, .{ 0, 0, ATLAS_WIDTH, HEIGHT }, .{ 0, 0, 1, 1 });
 
         renderer_flush(*renderer);
         swap_buffers(window);
@@ -51,12 +52,15 @@ main :: () {
 
 #import "Basic";
 #import "Math";
-
-#scope_file
-
+#import "GL";
 #import "Window_Creation";
 #import "Input";
-
+#import "File";
+#import "Hash_Table";
+#import "Unicode";
+#import "freetype-2.12.1";
+stbrp :: #import "stb_rect_pack";
+hb    :: #import "HarfBuzz";
 #if OS == {
 case .WINDOWS;
     #import "Windows";

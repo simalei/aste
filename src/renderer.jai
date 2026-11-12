@@ -198,8 +198,6 @@ swap_buffers :: (window: Window_Type) {
     }
 }
 
-#scope_file
-
 set_gl_uniform :: (program: GLuint, $name: string, value: Matrix4, transpose := true) {
     location := _glGetUniformLocation(program, name);
     glUniformMatrix4fv(location, 1, transpose, *value._11);
@@ -267,7 +265,3 @@ EOF
 
 DEFAULT_CLEAR_COLOR :: float.[0x18 / 255.0, 0x18 / 255.0, 0x18 / 255.0];
 MAX_TRIANGLES :: 1024;
-
-#import "GL";
-#import "Window_Creation";
-hb :: #import "HarfBuzz";

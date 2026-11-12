@@ -19,7 +19,6 @@ Glyph_Metric :: struct {
     bearing: Vector2;
 }
 
-FONT_SIZE :: 16;
 
 glyph_atlas_init :: (using atlas: *Glyph_Atlas) {
     err := FT_Init_FreeType(*ft);
@@ -154,8 +153,6 @@ get_atlas_rectangle :: (using atlas: *Glyph_Atlas) -> Rectangle {
     };
 }
 
-#scope_file
-
 get_glyph_rectangle :: (g: FT_GlyphSlot, glyph_index: FT_UInt) -> glyph_rect: stbrp.rect {
     glyph_width, glyph_height := g.bitmap.width, g.bitmap.rows;
     glyph_rect: stbrp.rect = .{
@@ -163,6 +160,7 @@ get_glyph_rectangle :: (g: FT_GlyphSlot, glyph_index: FT_UInt) -> glyph_rect: st
         w  = xx glyph_width,
         h  = xx glyph_height
     };
+
     return glyph_rect;
 }
 
@@ -173,14 +171,8 @@ ft_assert :: (err: FT_Error, text: string) {
 
 FONT_DATA :: #run embed("fonts/JetBrainsMono-Regular.ttf");
 
-ATLAS_WIDTH, ATLAS_HEIGHT :: 512, 512;
+FONT_SIZE  :: 16;
 MAX_GLYPHS :: 2048;
+ATLAS_WIDTH, ATLAS_HEIGHT :: 512, 512;
 NUM_NODES :: ATLAS_WIDTH;
 #assert NUM_NODES >= ATLAS_WIDTH "NUM_NODES must be >= ATLAS_WIDTH for optimal packing.";
-
-#import "GL";
-// I believe newer versions of the compiler have newer freetype packaged.
-#import "freetype-2.12.1";
-#import "Hash_Table";
-stbrp :: #import "stb_rect_pack";
-hb    :: #import "HarfBuzz";
