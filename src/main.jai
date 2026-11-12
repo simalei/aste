@@ -3,12 +3,15 @@ main :: () {
         SetProcessDPIAware();
     }
 
+    log("Current working directory: %", get_working_directory());
+
     WIDTH, HEIGHT :: 800, 600;
     NAME :: "aste";
     window := create_window(WIDTH, HEIGHT, NAME);
 
     renderer: Renderer;
     renderer_init(*renderer, window);
+    defer renderer_destroy(*renderer);
 
     quit := false;
     while !quit {
@@ -16,7 +19,14 @@ main :: () {
         update_window_events();
 
         for events_this_frame {
-            if it.type == .QUIT then quit = true;
+            if it.type == {
+            case .QUIT;
+                quit = true;
+            case .KEYBOARD;
+                if it.key_pressed && it.key_code == .ESCAPE {
+                    quit = true;
+                }
+            }
         }
 
         for resize_event: get_window_resizes() {
@@ -25,13 +35,9 @@ main :: () {
             }
         }
 
-        rect: Rectangle;
-        rect.x = 100;
-        rect.y = 100;
-        rect.w = 200;
-        rect.h = 300;
-
-        push_rectangle(*renderer, rect, .[ 1.0, 0.0, 0.0, 1.0 ], .[ 0.0, 1.0, 0.0, 1.0 ], .[ 0.0, 0.0, 1.0, 1.0 ], .[ 1.0, 1.0, 1.0, 1.0 ]);
+        TEXT :: "main :: () -> string { return \"Привет!\"; }";
+        push_text(*renderer, .{ 200, 200 }, TEXT);
+        //push_textured_rectangle(*renderer, .{ 0, 0, 512, 512 }, .{ 0, 0, 1, 1 });
 
         renderer_flush(*renderer);
         swap_buffers(window);
@@ -39,19 +45,12 @@ main :: () {
     }
 }
 
-swap_buffers :: (window: Window_Type) {
-    #if OS == {
-    case .WINDOWS;
-        dc := GetDC(window);
-        SwapBuffers(dc);
-    case .LINUX;
-        // Untested
-        glXSwapBuffers(x_global_display, window);
-    }
-}
-
 #load "renderer.jai";
+#load "glyph_atlas.jai";
+#load "utils.jai";
+
 #import "Basic";
+#import "Math";
 
 #scope_file
 
