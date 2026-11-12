@@ -213,6 +213,7 @@ create_program :: () -> program: GLuint {
     glAttachShader(program, vs);
     glAttachShader(program, fs);
     glLinkProgram(program);
+    DumpProgramInfoLog(program, "PROGRAM");
 
     return program;
 }
