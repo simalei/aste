@@ -13,6 +13,7 @@ main :: () {
     renderer_init(*renderer, window);
     defer renderer_destroy(*renderer);
 
+    swap_interval(1);
     quit := false;
     while !quit {
         reset_temporary_storage();
@@ -41,7 +42,6 @@ main :: () {
 
         renderer_flush(*renderer);
         swap_buffers(window);
-        sleep_milliseconds(16);
     }
 }
 

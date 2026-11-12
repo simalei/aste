@@ -178,6 +178,15 @@ renderer_destroy :: (using r: *Renderer) {
     glyph_atlas_destroy(*atlas);
 }
 
+swap_interval :: (interval: int) {
+    #if OS == {
+    case .WINDOWS;
+        wglSwapIntervalEXT(xx interval);
+    case .LINUX;
+        glXSwapIntervalEXT(xx interval);
+    }
+}
+
 swap_buffers :: (window: Window_Type) {
     #if OS == {
     case .WINDOWS;
