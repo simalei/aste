@@ -38,7 +38,9 @@ main :: () {
         }
 
         TEXT :: "main :: () -> string { return \"Привет!\"; }";
+        text_width, text_height := prepare_text(*renderer.atlas, TEXT);
         push_text(*renderer, .{ 200, 200 }, TEXT);
+        push_solid_rectangle(*renderer, .{ 200, 200 - text_height, text_width, text_height }, .[ 1.0, 0.0, 0.0, 0.2 ]);
         //push_textured_rectangle(*renderer, .{ 0, 0, ATLAS_WIDTH, HEIGHT }, .{ 0, 0, 1, 1 });
 
         renderer_flush(*renderer);

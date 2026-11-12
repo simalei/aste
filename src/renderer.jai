@@ -11,6 +11,12 @@ Vertex :: struct {
     using #as position: Vector2;
     color: [4]float;
     uv: Vector2;
+    render_mode: Render_Mode;
+}
+
+Render_Mode :: enum u8 {
+    NO_TEXTURE;
+    GLYPH_ATLAS;
 }
 
 Triangle :: [3]Vertex;
@@ -53,6 +59,9 @@ renderer_init :: (using r: *Renderer, window: Window_Type) {
     glVertexAttribPointer(2, 2, GL_FLOAT, false, size_of(Vertex), cast(*void) offset_of(Vertex, "uv"));
     glEnableVertexAttribArray(2);
 
+    glVertexAttribIPointer(3, 1, GL_UNSIGNED_BYTE, size_of(Vertex), cast(*void) offset_of(Vertex, "render_mode"));
+    glEnableVertexAttribArray(3);
+
     projection := orthographic_projection_matrix(0, cast(float, width), cast(float, height), 0, -1, 1);
     set_gl_uniform(program, "u_projection", projection);
 
@@ -79,28 +88,28 @@ push_quad :: inline (using r: *Renderer, v0: Vertex, v1: Vertex, v2: Vertex, v3:
 
 push_rectangle :: inline (using r: *Renderer, rect: Rectangle, c0: [4]float, c1: [4]float, c2: [4]float, c3: [4]float) {
     uv: Vector2 = .{ 0, 0 };
-    v0: Vertex = .{ .{ rect.x         , rect.y          }, c0, uv };
-    v1: Vertex = .{ .{ rect.x + rect.w, rect.y          }, c1, uv };
-    v2: Vertex = .{ .{ rect.x         , rect.y + rect.h }, c2, uv };
-    v3: Vertex = .{ .{ rect.x + rect.w, rect.y + rect.h }, c3, uv };
+    v0: Vertex = .{ .{ rect.x         , rect.y          }, c0, uv, .NO_TEXTURE };
+    v1: Vertex = .{ .{ rect.x + rect.w, rect.y          }, c1, uv, .NO_TEXTURE };
+    v2: Vertex = .{ .{ rect.x         , rect.y + rect.h }, c2, uv, .NO_TEXTURE };
+    v3: Vertex = .{ .{ rect.x + rect.w, rect.y + rect.h }, c3, uv, .NO_TEXTURE };
     push_quad(r, v0, v1, v2, v3);
 }
 
 push_solid_rectangle :: inline (using r: *Renderer, rect: Rectangle, color: [4]float) {
     uv: Vector2 = .{ 0, 0 };
-    v0: Vertex = .{ .{ rect.x         , rect.y          }, color, uv };
-    v1: Vertex = .{ .{ rect.x + rect.w, rect.y          }, color, uv };
-    v2: Vertex = .{ .{ rect.x         , rect.y + rect.h }, color, uv };
-    v3: Vertex = .{ .{ rect.x + rect.w, rect.y + rect.h }, color, uv };
+    v0: Vertex = .{ .{ rect.x         , rect.y          }, color, uv, .NO_TEXTURE };
+    v1: Vertex = .{ .{ rect.x + rect.w, rect.y          }, color, uv, .NO_TEXTURE };
+    v2: Vertex = .{ .{ rect.x         , rect.y + rect.h }, color, uv, .NO_TEXTURE };
+    v3: Vertex = .{ .{ rect.x + rect.w, rect.y + rect.h }, color, uv, .NO_TEXTURE };
     push_quad(r, v0, v1, v2, v3);
 }
 
 push_textured_rectangle :: (using r: *Renderer, rect: Rectangle, uv_rect: Rectangle, tint: [3]float = .[ 1.0, 1.0, 1.0 ]) {
     c: [4]float = .[ tint[0], tint[1], tint[2], 1.0 ];
-    v0: Vertex = .{ .{ rect.x         , rect.y          }, c, .{ uv_rect.x            , uv_rect.y             } };
-    v1: Vertex = .{ .{ rect.x + rect.w, rect.y          }, c, .{ uv_rect.x + uv_rect.w, uv_rect.y             } };
-    v2: Vertex = .{ .{ rect.x         , rect.y + rect.h }, c, .{ uv_rect.x            , uv_rect.y + uv_rect.h } };
-    v3: Vertex = .{ .{ rect.x + rect.w, rect.y + rect.h }, c, .{ uv_rect.x + uv_rect.w, uv_rect.y + uv_rect.h } };
+    v0: Vertex = .{ .{ rect.x         , rect.y          }, c, .{ uv_rect.x            , uv_rect.y             }, .GLYPH_ATLAS };
+    v1: Vertex = .{ .{ rect.x + rect.w, rect.y          }, c, .{ uv_rect.x + uv_rect.w, uv_rect.y             }, .GLYPH_ATLAS };
+    v2: Vertex = .{ .{ rect.x         , rect.y + rect.h }, c, .{ uv_rect.x            , uv_rect.y + uv_rect.h }, .GLYPH_ATLAS };
+    v3: Vertex = .{ .{ rect.x + rect.w, rect.y + rect.h }, c, .{ uv_rect.x + uv_rect.w, uv_rect.y + uv_rect.h }, .GLYPH_ATLAS };
     push_quad(r, v0, v1, v2, v3);
 }
 
@@ -232,9 +241,11 @@ VERTEX_SHADER :: #string EOF
 layout (location = 0) in vec2 a_position;
 layout (location = 1) in vec4 a_color;
 layout (location = 2) in vec2 a_uv;
+layout (location = 3) in uint a_render_mode;
 
 out vec4 v_color;
 out vec2 v_uv;
+out uint v_render_mode;
 
 uniform mat4 u_projection;
 
@@ -243,14 +254,19 @@ void main()
     gl_Position = u_projection * vec4(a_position, 0.0, 1.0);
     v_color = a_color;
     v_uv = a_uv;
+    v_render_mode = a_render_mode;
 }
 EOF
 
 FRAGMENT_SHADER :: #string EOF
 #version 330 core
 
+#define RENDER_MODE_NO_TEXTURE 0
+#define RENDER_MODE_GLYPH_ATLAS 1
+
 in vec4 v_color;
 in vec2 v_uv;
+flat in uint v_render_mode;
 
 out vec4 frag_color;
 
@@ -258,8 +274,16 @@ uniform sampler2D u_glyph_atlas;
 
 void main()
 {
-    //frag_color = v_color;
-    frag_color = vec4(v_color.rgb, texture(u_glyph_atlas, v_uv).r);
+    switch (v_render_mode) {
+    case RENDER_MODE_NO_TEXTURE:
+        frag_color = v_color;
+        break;
+    case RENDER_MODE_GLYPH_ATLAS:
+        frag_color = vec4(v_color.rgb, texture(u_glyph_atlas, v_uv).r);
+        break;
+    default:
+        discard;
+    }
 }
 EOF
 
