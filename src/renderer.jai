@@ -66,6 +66,7 @@ renderer_init :: (using r: *Renderer, window: Window_Type) {
     set_gl_uniform(program, "u_projection", projection);
 
     glyph_atlas_init(*r.atlas);
+    triangle_count = 0;
 }
 
 push_triangle :: inline (using r: *Renderer, ts: ..Triangle) {
@@ -139,17 +140,19 @@ push_text :: (using r: *Renderer, origin: Vector2, text: string, tint: [3]float 
         if !success {
             log_error("Failed to find metric for glyph index %.", glyph_id);
         }
+        // Skip over glyphs that have no width and no height (whitespace).
+        if metric.glyph_rect.w != 0 && metric.glyph_rect.h != 0 {
+            // Questionable calculations here.
+            target_rect := Rectangle.{
+                // @Bad Flooring seems to fix the artifact problem but idk.
+                x = floor( metric.bearing.x + cursor.x + glyph_position.x_offset),
+                y = floor(-metric.bearing.y + cursor.y - glyph_position.y_offset),
+                w = metric.glyph_rect.w,
+                h = metric.glyph_rect.h,
+            };
 
-        // Questionable calculations here.
-        target_rect := Rectangle.{
-            // @Bad Flooring seems to fix the artifact problem but idk.
-            x = floor( metric.bearing.x + cursor.x + glyph_position.x_offset),
-            y = floor(-metric.bearing.y + cursor.y - glyph_position.y_offset),
-            w = metric.glyph_rect.w,
-            h = metric.glyph_rect.h,
-        };
-
-        push_textured_rectangle(r, target_rect, metric.atlas_rect, tint);
+            push_textured_rectangle(r, target_rect, metric.atlas_rect, tint);
+        }
         cursor.x += glyph_position.x_advance >> 6;
         cursor.y += glyph_position.y_advance >> 6;
     }
