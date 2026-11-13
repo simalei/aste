@@ -38,6 +38,7 @@ glyph_atlas_init :: (using atlas: *Glyph_Atlas) {
     hb_blob   = hb.blob_create_or_fail(FONT_DATA.data, FONT_DATA.count, .READONLY, null, null);
     hb_face   = hb.face_create(hb_blob, 0);
     hb_font   = hb.font_create(hb_face);
+    hb.font_set_scale(hb_font, FONT_SIZE * 64, FONT_SIZE * 64);
 
     stbrp_ctx: stbrp.ctx         = ---;
     nodes: [NUM_NODES]stbrp.node = ---;
