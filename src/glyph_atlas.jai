@@ -7,6 +7,8 @@ Glyph_Atlas :: struct {
     hb_face: *hb.face_t;
     hb_font: *hb.font_t;
     char_map: Table(u32, Glyph_Metric);
+    ascender: int;
+    descender: int;
     prepared: struct {
         text: string; // Should only be used to determine whether the text should be "re-prepared".
         glyph_count: u32;
@@ -19,7 +21,6 @@ Glyph_Metric :: struct {
     bearing: Vector2;
 }
 
-
 glyph_atlas_init :: (using atlas: *Glyph_Atlas) {
     err := FT_Init_FreeType(*ft);
     ft_assert(err, "FT_Init_FreeType: %");
@@ -29,6 +30,9 @@ glyph_atlas_init :: (using atlas: *Glyph_Atlas) {
 
     FT_Set_Char_Size(ft_face, FONT_SIZE * 64, FONT_SIZE * 64, 0, 0);
     FT_Select_Charmap(ft_face, .UNICODE);
+    // Cocos2d method.
+    ascender  = ft_face.size.metrics.ascender >> 6;
+    descender = ft_face.size.metrics.descender >> 6;
 
     hb_buffer = hb.buffer_create();
     hb_blob   = hb.blob_create_or_fail(FONT_DATA.data, FONT_DATA.count, .READONLY, null, null);
